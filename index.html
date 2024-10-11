@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jogo de Português</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: url('https://example.com/seu_fundo.jpg') no-repeat center center fixed; /* Substitua pela URL da imagem desejada */
+            background-size: cover;
+            padding: 20px;
+            text-align: center;
+            color: #fff;
+        }
+        h1 {
+            color: #f0f0f0;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px #000;
+        }
+        #score {
+            font-size: 24px;
+            margin: 10px 0;
+            color: #FFD700; /* Dourado */
+        }
+        .question {
+            margin: 20px 0;
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border-radius: 10px;
+            transition: transform 0.3s;
+        }
+        .question:hover {
+            transform: scale(1.05);
+        }
+        button {
+            padding: 15px 30px;
+            margin: 10px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            transition: 0.3s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #feedback {
+            font-size: 20px;
+            margin: 20px 0;
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-shadow: 1px 1px 3px #000;
+        }
+        #feedback.correct {
+            background-color: rgba(40, 167, 69, 0.8);
+        }
+        #feedback.incorrect {
+            background-color: rgba(220, 53, 69, 0.8);
+        }
+        /* Transições para fade-in e fade-out */
+        .fade-in {
+            animation: fadeIn 1s forwards;
+        }
+        .fade-out {
+            animation: fadeOut 1s forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <h1>Quiz de Português - Fase <span id="current-phase">1</span></h1>
+    <div id="score">Pontuação: <span id="score-value">0</span></div>
+    <div id="feedback"></div>
+    <div id="quiz-container"></div>
+
+    <script>
+        let phase = 1;
+        let score = 0;
+        let currentQuestionIndex = 0;
+
+        const phases = [
+            // Fase 1
+            [
+                { question: "Qual interjeição expressa alegria?", options: ["a) Ah", "b) Viva", "c) Ui", "d) Opa"], answer: "b" },
+                { question: "Qual verbo está correto na frase: 'Eu _____ amanhã.'", options: ["a) vou", "b) vai", "c) fui", "d) fora"], answer: "a" },
+                { question: "Qual palavra perdeu o acento com o novo acordo ortográfico?", options: ["a) voo", "b) idéia", "c) herói", "d) país"], answer: "a" },
+                { question: "Qual interjeição expressa dor?", options: ["a) Ui", "b) Viva", "c) Ah", "d) Psiu"], answer: "a" },
+                { question: "Qual interjeição expressa espanto?", options: ["a) Oh", "b) Ops", "c) Eita", "d) Psiu"], answer: "c" },
+                { question: "Qual o sinônimo de 'feliz'?", options: ["a) triste", "b) contente", "c) bravo", "d) calmo"], answer: "b" },
+                { question: "Qual a forma correta do plural de 'maçã'?", options: ["a) maçãs", "b) maçã", "c) maçãs", "d) maçã's"], answer: "a" },
+                { question: "Qual a forma correta: 'você é mais inteligente _____ eu'?", options: ["a) do que", "b) que", "c) que o", "d) do"], answer: "a" },
+                { question: "Qual é o antônimo de 'rápido'?", options: ["a) lento", "b) rápido", "c) ligeiro", "d) ágil"], answer: "a" },
+                { question: "A palavra 'futebol' é um exemplo de:", options: ["a) substantivo", "b) verbo", "c) adjetivo", "d) advérbio"], answer: "a" }
+            ],
+            // Fase 2
+            [
+                { question: "Verbo correto na frase: 'Eles _____ tarde.'", options: ["a) foram", "b) fora", "c) foi", "d) forão"], answer: "a" },
+                { question: "Qual palavra perdeu o trema com o novo acordo ortográfico?", options: ["a) linguiça", "b) história", "c) açúcar", "d) saúde"], answer: "a" },
+                { question: "Qual interjeição expressa silêncio?", options: ["a) Psiu", "b) Viva", "c) Opa", "d) Oba"], answer: "a" },
+                { question: "Verbo correto na frase: 'Nós _____ ao parque.'", options: ["a) fomos", "b) vai", "c) fora", "d) fora"], answer: "a" },
+                { question: "Qual palavra agora tem hífen no novo acordo?", options: ["a) autoescola", "b) anti-inflamatório", "c) coerdeiro", "d) paraquedas"], answer: "b" },
+                { question: "O que é um adjetivo?", options: ["a) uma ação", "b) uma qualidade", "c) um lugar", "d) um objeto"], answer: "b" },
+                { question: "A forma correta é:", options: ["a) por que", "b) por quê", "c) porque", "d) porquê"], answer: "c" },
+                { question: "Qual é o antônimo de 'claro'?", options: ["a) escuro", "b) brilhante", "c) luminoso", "d) radiante"], answer: "a" },
+                { question: "Qual a função do pronome na frase: 'Ele foi ao mercado'?", options: ["a) sujeito", "b) objeto", "c) adjunto", "d) predicado"], answer: "a" },
+                { question: "Qual o plural correto de 'cão'?", options: ["a) cães", "b) cãos", "c) cãon", "d) canes"], answer: "a" }
+            ],
+            // Fase 3
+            [
+                { question: "A forma correta é:", options: ["a) por que", "b) por quê", "c) porque", "d) porquê"], answer: "c" },
+                { question: "O antônimo de 'calor' é:", options: ["a) frio", "b) morno", "c) quente", "d) fervente"], answer: "a" },
+                { question: "Sinônimo de 'veloz':", options: ["a) rápido", "b) devagar", "c) lerdo", "d) grande"], answer: "a" },
+                { question: "Verbo correto na frase: 'Eu _____ cedo.'", options: ["a) saio", "b) sai", "c) saiu", "d) saiu"], answer: "a" },
+                { question: "Palavra que leva acento:", options: ["a) caqui", "b) heroico", "c) país", "d) saudade"], answer: "c" },
+                { question: "O que caracteriza uma oração?", options: ["a) Tem verbo", "b) Não tem sujeito", "c) Tem adjetivo", "d) É um conjunto de palavras"], answer: "a" },
+                { question: "Qual é a forma correta de 'pára-quedas'?", options: ["a) paraquedas", "b) pára-quedas", "c) para-quedas", "d) páraquedas"], answer: "a" },
+                { question: "A palavra 'computador' é um exemplo de:", options: ["a) adjetivo", "b) substantivo", "c) verbo", "d) advérbio"], answer: "b" },
+                { question: "Qual a forma correta de 'havia'?", options: ["a) tinha", "b) havia", "c) haver", "d) há"], answer: "b" },
+                { question: "O antônimo de 'pobre' é:", options: ["a) rico", "b) carente", "c) miserável", "d) endividado"], answer: "a" }
+            ],
+            // Fase 4
+            [
+                { question: "O que significa a palavra 'incrível'?", options: ["a) normal", "b) admirável", "c) simples", "d) feio"], answer: "b" },
+                { question: "A forma correta é:", options: ["a) já", "b) ja", "c) já", "d) ja"], answer: "a" },
+                { question: "Qual a função do verbo na frase: 'Ele estuda para o teste'?", options: ["a) ação", "b) qualidade", "c) lugar", "d) tempo"], answer: "a" },
+                { question: "Qual o plural correto de 'pé'?", options: ["a) pés", "b) pés", "c) pé", "d) pes"], answer: "a" },
+                { question: "Qual a forma correta da preposição: 'a casa de meu amigo'?", options: ["a) do amigo", "b) do amigo", "c) da amigo", "d) da amiga"], answer: "a" },
+                { question: "O que caracteriza uma frase interrogativa?", options: ["a) Tem ponto de interrogação", "b) Tem verbo", "c) Tem sujeito", "d) Tem adjetivo"], answer: "a" },
+                { question: "A palavra 'feliz' é um exemplo de:", options: ["a) adjetivo", "b) verbo", "c) advérbio", "d) pronome"], answer: "a" },
+                { question: "Qual é o antônimo de 'forte'?", options: ["a) fraco", "b) resistente", "c) duro", "d) firme"], answer: "a" },
+                { question: "Qual a forma correta de 'existe'?", options: ["a) existiu", "b) existir", "c) existe", "d) existiu"], answer: "c" },
+                { question: "A palavra 'dificuldade' é um exemplo de:", options: ["a) substantivo", "b) adjetivo", "c) verbo", "d) advérbio"], answer: "a" }
+            ],
+            // Fase 5
+            [
+                { question: "Qual a forma correta de 'as árvores'? ", options: ["a) as arvores", "b) as árvore", "c) as árvores", "d) as arvore"], answer: "c" },
+                { question: "O que é um adjetivo?", options: ["a) um lugar", "b) uma ação", "c) uma qualidade", "d) um objeto"], answer: "c" },
+                { question: "Qual é o antônimo de 'grande'?", options: ["a) pequeno", "b) imenso", "c) enorme", "d) vasto"], answer: "a" },
+                { question: "Qual a forma correta do plural de 'pão'?", options: ["a) pães", "b) pão", "c) pães", "d) pães"], answer: "a" },
+                { question: "A palavra 'estranho' é um exemplo de:", options: ["a) adjetivo", "b) verbo", "c) pronome", "d) advérbio"], answer: "a" },
+                { question: "O que significa a palavra 'amável'?", options: ["a) gentil", "b) frio", "c) sério", "d) chato"], answer: "a" },
+                { question: "Qual a forma correta de 'a casa de meu amigo'?", options: ["a) do amigo", "b) do amigo", "c) da amigo", "d) da amiga"], answer: "a" },
+                { question: "O que caracteriza uma frase afirmativa?", options: ["a) Tem ponto final", "b) Tem verbo", "c) Tem sujeito", "d) Tem adjetivo"], answer: "a" },
+                { question: "A palavra 'feliz' é um exemplo de:", options: ["a) adjetivo", "b) verbo", "c) advérbio", "d) pronome"], answer: "a" },
+                { question: "Qual o plural correto de 'leão'?", options: ["a) leões", "b) leão", "c) leões", "d) leons"], answer: "a" }
+            ]
+        ];
+
+        function displayQuestion() {
+            const currentPhaseQuestions = phases[phase - 1];
+            if (currentQuestionIndex < currentPhaseQuestions.length) {
+                const currentQuestion = currentPhaseQuestions[currentQuestionIndex];
+                const quizContainer = document.getElementById("quiz-container");
+                quizContainer.innerHTML = `
+                    <div class="question fade-in">
+                        <p>${currentQuestion.question}</p>
+                        ${currentQuestion.options.map((option, index) => `
+                            <button onclick="checkAnswer('${currentQuestion.answer}', '${option[0]}')">${option}</button>
+                        `).join('')}
+                    </div>
+                `;
+            } else {
+                endPhase();
+            }
+        }
+
+        function checkAnswer(correctAnswer, selectedOption) {
+            const feedback = document.getElementById("feedback");
+            const quizContainer = document.getElementById("quiz-container");
+            quizContainer.classList.add('fade-out');
+            setTimeout(() => {
+                quizContainer.innerHTML = '';
+                if (selectedOption === correctAnswer) {
+                    score += 10;
+                    feedback.textContent = "Correto! +10 pontos";
+                    feedback.className = "fade-in correct";
+                } else {
+                    feedback.textContent = "Incorreto! A resposta correta é: " + correctAnswer.toUpperCase();
+                    feedback.className = "fade-in incorrect";
+                }
+                document.getElementById("score-value").textContent = score;
+                currentQuestionIndex++;
+                setTimeout(() => {
+                    feedback.className = "";
+                    displayQuestion();
+                }, 2000);
+            }, 300);
+        }
+
+        function endPhase() {
+            const quizContainer = document.getElementById("quiz-container");
+            quizContainer.innerHTML = `
+                <div class="fade-in" style="font-size: 24px;">
+                    Você completou a fase ${phase}! Sua pontuação total é: ${score} pontos.
+                </div>
+                <button onclick="nextPhase()">Próxima fase</button>
+            `;
+        }
+
+        function nextPhase() {
+            phase++;
+            currentQuestionIndex = 0;
+            if (phase <= phases.length) {
+                document.getElementById("current-phase").textContent = phase;
+                score = Math.floor(score * 1.5); // Aumenta a pontuação ao passar de fase
+                document.getElementById("score-value").textContent = score;
+                displayQuestion();
+            } else {
+                endGame();
+            }
+        }
+
+        function endGame() {
+            const quizContainer = document.getElementById("quiz-container");
+            quizContainer.innerHTML = `
+                <div class="fade-in" style="font-size: 24px;">
+                    Parabéns! Você completou todas as fases! Sua pontuação final é: ${score} pontos.
+                </div>
+                <button onclick="restartGame()">Reiniciar</button>
+            `;
+        }
+
+        function restartGame() {
+            phase = 1;
+            score = 0;
+            currentQuestionIndex = 0;
+            document.getElementById("score-value").textContent = score;
+            document.getElementById("current-phase").textContent = phase;
+            displayQuestion();
+        }
+
+        // Inicia o jogo
+        displayQuestion();
+    </script>
+</body>
+</html>
